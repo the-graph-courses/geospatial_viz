@@ -30,28 +30,6 @@ ggplot2::theme_set(new = theme_bw())
 options(scipen=10000)
 ```
 
-------------------------------------------------------------------------
-
-## Introduction
-
-• In disease outbreaks, **Thematic maps** can be called *Epidemic maps*.
-
-• The two most iconic types of Thematic maps: **Choropleth maps** and **Dot maps**.
-
-![Figure 1. (A) Choropleth map with the number of cases in a simulated Ebola epidemic in Sierra Leone. (B) Dot map. Location of simulated Ebola cases in Sierra Leone, colored by each case outcome.](images/introplots_merge_01.png)
-
-------------------------------------------------------------------------
-
-## Learning objectives
-
-1.  Identify two types of **Thematic maps** (choropleth and dot maps) used by epidemiologist to visualize Geospatial data.
-
-2.  Create Thematic maps using `{ggplot2}` and the **`geom_sf()`** function.
-
-3.  Relate each Thematic map with a **Geometry** type.
-
-------------------------------------------------------------------------
-
 ## Prerequisites
 
 This lesson requires the following packages:
@@ -64,11 +42,19 @@ pacman::p_load(rnaturalearth,
                ggplot2,
                mdsr,
                terra,
-               spData)
-
+               spData, 
+               readr)
 ```
 
-This lesson requires familiarity with `{ggplot2}`: if you need to brush up, have a look at our introductory course on data visualization.
+------------------------------------------------------------------------
+
+## Learning objectives
+
+1.  Identify two types of **Thematic maps** (choropleth and dot maps) used by epidemiologist to visualize Geospatial data.
+
+2.  Create Thematic maps using `{ggplot2}` and the **`geom_sf()`** function.
+
+3.  Relate each Thematic map with a **Geometry** type.
 
 ------------------------------------------------------------------------
 
@@ -100,8 +86,8 @@ This lesson requires familiarity with `{ggplot2}`: if you need to brush up, have
 2.  `fill` each of them according to their population (`pop_est`):
 
 ```{r}
-ggplot(______ = africountries) +
-  ______(mapping = aes(______ = ______))
+# WRITE YOUR CODE HERE
+africountries
 ```
 
 ::: side-note
@@ -113,9 +99,6 @@ Create a Choropleth map with the `world` data from the `{spData}` package, using
 
 ```{r,eval = FALSE}
 # Write and visualize your answer:
-q1 <- 
-  ggplot(data = world) +
-  ________(mapping = aes(fill = pop))
 q1
 ```
 :::
@@ -129,8 +112,7 @@ q1
 ```{r}
 countries <- rnaturalearth::ne_countries(returnclass = "sf")
 
-ggplot(data = countries) + 
-  ______(mapping = aes(______ = ______))
+ggplot(data = countries) 
 ```
 
 ::: watch-out
@@ -189,8 +171,7 @@ ______(africountries)
 2.  and `size` them according to their number of inhabitants:
 
 ```{r,eval=TRUE,echo=TRUE}
-ggplot(______ = africapitals +
-  ______(mapping = aes(______ = ______))
+africapitals
 ```
 
 ::: rstudio-cloud
@@ -198,10 +179,8 @@ We can replicate John Snow's Dot map with the number of deaths per household fro
 
 ```{r,eval=FALSE}
 cholera_deaths <- 
-  read_rds(here("basic_geospatial_viz/data/cholera_deaths.rds"))
+  read_rds(here("data/cholera_deaths.rds"))
 
-ggplot(data = cholera_deaths) + 
-  _____(mapping = aes(_____ = Count), alpha = 0.7)
 ```
 :::
 
@@ -214,8 +193,7 @@ airports <- rnaturalearth::ne_download(scale = 10,
                                        type = "airports", 
                                        returnclass = "sf")
 
-ggplot(data = airports) + 
-  ______(aes(______ = ______), alpha = 0.5)
+
 ```
 
 ::: practice
@@ -223,9 +201,6 @@ Create a Thematic map with the `afriairports` object to portrait all its airport
 
 ```{r,eval = FALSE}
 # Write and visualize your answer:
-q2 <- 
-  ggplot(data = afriairports) +
-  ________(mapping = aes(________ = ________))
 q2
 ```
 :::
@@ -257,7 +232,7 @@ q2
 
 • Dot maps visualize *Points*.
 
-![Figure 4. Geometry types for Choropleth and Dot maps.](images/geometries-point_poly.JPG){width="445"}
+![Figure 4. Geometry types for Choropleth and Dot maps.](images/geometries-point_poly.jpg){width="445"}
 :::
 
 ::: practice
@@ -266,22 +241,22 @@ Which of the following options of *Thematic map* types:
 a.  `"choropleth_map"`
 b.  `"dot_distribution_map"`
 
-...corresponds to each of these *Epidemic map* figures?
+...corresponds to each of these *Epidemic map* figures seen below?
 
-Your answer should be either "choropleth_map" or "dot_distribution_map".
+```{r}
+# Write your answers here as comments:
+# 
+#
+```
 
 1.  [Malaria cases in Africa](https://data.unicef.org/topic/child-health/malaria/):
 
-![](images/question_map_01.JPG){width="446"}
+![](images/question_map_01.jpg){width="446"}
 
 2.  [COVID-19 cases in the world](https://coronavirus.jhu.edu/map.html):
 
-![](images/question_map_02.JPG){width="613"}
+![](images/question_map_02.jpg){width="613"}
 :::
-
-```{r include = F}
-pacman::p_unload(raster) # avoid masking select(). Temporary investigation
-```
 
 ------------------------------------------------------------------------
 
@@ -347,5 +322,5 @@ q2
 
 Which of the following options of *Thematic map* types corresponds to each of these *Epidemic map* figures? Your answer should be either "choropleth_map" or "dot_distribution_map".
 
-1.  [**Malaria cases in Africa]** is a CHROPLETH MAP
+1.  [\*\*Malaria cases in Africa]\*\* is a CHROPLETH MAP
 2.  **[COVID-19 cases in the world]** is a DOT DISTRIBUTION MAP
