@@ -72,7 +72,8 @@ pacman::p_load(ggspatial,
                terra,
                dplyr,
                spData,
-               sf)
+               sf, 
+               prettymapr)
 ```
 
 This lesson requires familiarity with `{ggplot2}`: if you need to brush up, have a look at our introductory course on data visualization.
@@ -127,7 +128,7 @@ afriairports %>%
   coord_sf()
 ```
 
-::: rstudio-cloud
+::: r-practice
 Create a Density map with the `pcrime` data read from the `pcrime.rds` local file.
 
 ```{r}
@@ -141,12 +142,7 @@ pcrime
 Use the `geom_bin_2d()`, to portrait the number of crimes per area, faceted by the two types of crime in the column `marks`.
 
 ```{r,eval=FALSE}
-pcrime %>% 
-  st_coordinates_tidy() %>% 
-  ggplot(aes(x = X,y = Y)) +
-  ______() +
-  coord_sf() +
-  facet_wrap(~marks)
+pcrime # CONTINUE THE CODE
 ```
 :::
 
@@ -156,20 +152,20 @@ pcrime %>%
 
 • Altitude, air pollution or rainfall data.
 
-![Figure 5. Altitude data from The Gambia.](images/pre-malaria-02.PNG){width="556"}
+![Figure 5. Altitude data from The Gambia.](images/pre-malaria-02.png){width="556"}
 
 • Used for *spatially continuous disease prevalence surfaces*.
 
 • Moraga et al. (2019) for malaria in children at 65 villages in The Gambia
 
-![Figure 6. Predicted malaria prevalence in The Gambia.](images/pre-malaria-03.PNG){width="557"}
+![Figure 6. Predicted malaria prevalence in The Gambia.](images/pre-malaria-03.png){width="557"}
 
 • They used a geostatistical model to predict the *disease prevalence* at *unobserved locations*.
 
 ### What alternative plots do we have? {.unnumbered}
 
 • Two `{ggplot2}` alternatives:
-
+3
 • Use `geom_density_2d_filled()` for a contoured density plot of `"count"` values:
 
 ```{r}
@@ -200,9 +196,9 @@ afriairports %>%
   ggplot(aes(x = X, y = Y)) +
   
   # 👉 with an alternative geom function 👈
-  ______(
+  stat_density_2d(
     geom = "raster",
-    mapping = aes(fill = after_stat(______)),
+    mapping = aes(fill = after_stat(count)),
     contour = FALSE) + 
   scale_fill_viridis_c() +
   
@@ -210,18 +206,13 @@ afriairports %>%
   coord_sf()
 ```
 
-::: rstudio-cloud
+::: r-practice
 Use the `st_coordinates_tidy()` function to extract the X and Y coordinates from the `pcrime` dataset.
 
 This will be useful to built a Density map with `geom_density_2d_filled()` and portrait the number of crimes per area, faceted by the two types of crime in the column `marks`.
 
 ```{r,eval=FALSE}
-pcrime %>% 
-  ______ %>% 
-  ggplot(aes(x = X,y = Y)) +
-  geom_density_2d_filled() +
-  coord_sf() +
-  facet_wrap(~marks)
+pcrime # CONTINUE THE CODE
 ```
 :::
 
@@ -260,7 +251,7 @@ ggplot(data = cholera_deaths) +
 
 • Number of deaths per location using `size`.
 
-::: rstudio-cloud
+::: r-practice
 Add a Basemap to a Dot map using the `africapitals` object and the `annotation_map_tile()` function.
 
 ```{r,eval=FALSE,echo=TRUE}
@@ -300,16 +291,11 @@ pcrime %>%
 • The basemap must be bellow the `geom_*` function!
 :::
 
-::: rstudio-cloud
+::: r-practice
 Use two functions, `annotation_map_tile()` and `geom_bin_2d()`, to add a Basemap to a Density map using the `afriairports` object.
 
 ```{r,eval=FALSE,echo=TRUE}
-afriairports %>% 
-  st_coordinates_tidy() %>% 
-  ggplot(aes(x = X, y = Y)) +
-  ______() + 
-  ______() +
-  coord_sf()
+afriairports # CONTINUE THE CODE
 ```
 :::
 
@@ -355,7 +341,7 @@ Some material in this lesson was adapted from the following sources:
 
 ## Answer Key {.unnumbered}
 
-### RStudio Cloud 1 {.unlisted .unnumbered}
+### Practice 1 {.unlisted .unnumbered}
 
 ```{r}
 pcrime %>% 
@@ -366,7 +352,7 @@ pcrime %>%
     facet_wrap(~marks)
 ```
 
-### RStudio Cloud 2 {.unlisted .unnumbered}
+### Practice 2 {.unlisted .unnumbered}
 
 ```{r}
 pcrime %>% 
@@ -377,7 +363,7 @@ pcrime %>%
     facet_wrap(~marks)
 ```
 
-### RStudio Cloud 3 {.unlisted .unnumbered}
+### Practice 3 {.unlisted .unnumbered}
 
 ```{r}
 ggplot(data = africapitals) +
@@ -385,7 +371,7 @@ ggplot(data = africapitals) +
     geom_sf(mapping = aes(size = pop), alpha = 0.5)
 ```
 
-### RStudio Cloud 4 {.unlisted .unnumbered}
+### Practice 4 {.unlisted .unnumbered}
 
 ```{r}
 afriairports %>% 
