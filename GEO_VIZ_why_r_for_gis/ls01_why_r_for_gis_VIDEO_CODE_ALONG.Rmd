@@ -1,16 +1,19 @@
 ---
-title: 'Thematic Maps'
+title: '\ '
 output:
+  # word_document:
+  #   toc: true
   html_document:
     number_sections: true
     toc: true
-    toc_float: true
     css: !expr here::here("global/style/style.css")
     highlight: kate
-editor_options: 
+    pandoc_args: --shift-heading-level-by=-1
+editor_options:
+  markdown:
+    wrap: 100
+  canonical: true
   chunk_output_type: inline
-  markdown: 
-    wrap: 72
 ---
 
 ```{r, include = FALSE, warning = FALSE, message = FALSE}
@@ -30,259 +33,288 @@ ggplot2::theme_set(new = theme_bw())
 options(scipen=10000)
 ```
 
-## Prerequisites
-
-This lesson requires the following packages:
-
-```{r,eval=TRUE,echo=TRUE,message=FALSE}
-if(!require('pacman')) install.packages('pacman')
-pacman::p_load_gh("afrimapr/afrilearndata")
-pacman::p_load(rnaturalearth,
-               ggspatial,
-               ggplot2,
-               mdsr,
-               terra,
-               spData, 
-               readr)
-```
-
 ------------------------------------------------------------------------
+
+<!-- # Geospatial analysis: R for GIS -->
+
+## Introduction
+
+• Spatial data provide insights
+
+• *Spread* of a disease, or
+
+• *Situation* of an outbreak
+
+• **Where** are the current disease hotspots?
+
+• How have the hotspots **changed over time**?
+
+• How is the **access** to health facilities?
+
+![](images/gis_head_image.png)
+
+• Today, **why to use R** to address these tasks.
 
 ## Learning objectives
 
-1.  Identify two types of **Thematic maps** (choropleth and dot maps) used by epidemiologist to visualize Geospatial data.
+1.  Define what is a **geospatial analysis**.
 
-2.  Create Thematic maps using `{ggplot2}` and the **`geom_sf()`** function.
+2.  Identify the main analytical task that a **GIS software** need to solve.
 
-3.  Relate each Thematic map with a **Geometry** type.
+3.  Identify the **advantages** of R as a GIS software.
 
-------------------------------------------------------------------------
+## Prerequisites
 
-## Choropleth map
+This lesson requires familiarity with basic R and `{ggplot2}`: if you need to brush up, have a look at our introductory course on R and data visualization.
 
-### What is it? {.unnumbered}
+```{r,eval=TRUE,echo=TRUE,message=FALSE}
+if(!require('pacman')) install.packages('pacman')
+pacman::p_load_gh("wmgeolab/rgeoboundaries")
+pacman::p_load(tidyverse, 
+               ggspatial, 
+               leaflet, 
+               mapview,
+               raster,
+               spData,
+               stars, 
+               tmap, 
+               here,
+               sf)
+```
 
-• *Colors or shadings* represent **geographic regions** in relation to the value of a variable.
+## What is Geospatial analysis?
 
-• E.g. *Larger values* could be indicated by a [**darker color**]{.underline}, and *smaller values* by a [**lighter color**]{.underline}.
+• Data with *geographic* locations or coordinates
 
-### How to plot it? {.unnumbered}
+• Related to positions on the Earth's surface.
 
-• Geospatial data can be plotted using **`ggplot2::geom_sf()`**.
+• Essential to epidemiology.
 
-• *Colors* and *shapes* can be depicted with the `aes()` function,
+• Identify **hot-spots** and potential **high-risk areas** for communicable disease spread;
 
-• Using the `fill`, `color` and `size` arguments.
+• Map of malaria prevalence predictions in The Gambia (Moraga, 2019)
 
-#### With Quantitative data {.unlisted .unnumbered}
+![](images/malaria_gambia_01.png)
 
-• A Quantitative *Choropleth map* requires the `fill` argument.
+• Let's see how the code looks like!
 
-• Let's create one with the `africountries` dataset from {`afrilearndata}`!
+```{r,message=FALSE,warning=FALSE}
+# 👉 first, get packages:
 
-• Administrative boundaries of all the countries in the African continent.
-
-1.  Use `ggplot2::geom_sf()` to plot African countries, only.
-2.  `fill` each of them according to their population (`pop_est`):
+if(!require('pacman')) install.packages('pacman')
+pacman::p_load_gh("wmgeolab/rgeoboundaries")
+pacman::p_load(tidyverse, ggspatial, leaflet, 
+               raster, stars, here)
+```
 
 ```{r}
-# WRITE YOUR CODE HERE
-africountries
+# 👉 second, get data:
+
+# country boundaries
+gambia_boundaries <- geoboundaries(country = "Gambia", adm_lvl = 1)
+# malaria prevalence
+gambia_prevalence <- read_rds(here("data", "gambia_prevalence.rds"))
 ```
-
-::: side-note
-• `sf` stands for **"simple features"**, an [open standard](http://portal.opengeospatial.org/files/?artifact_id=25355) used to represent a wide range of *geometric shapes*.
-:::
-
-::: practice
-Create a Choropleth map with the `world` data from the `{spData}` package, using `geom_sf()`, to portrait its countries and `fill` them in relation to its population, available in the `pop` variable.
-
-```{r,eval = FALSE}
-# Write and visualize your answer:
-q1
-```
-:::
-
-#### With Categorical data {.unlisted .unnumbered}
-
-• Let's keep using `fill`.
-
-• Create a map with countries *colored* by their Economical classification (`economy`):
 
 ```{r}
-countries <- rnaturalearth::ne_countries(returnclass = "sf")
+# 👉 third, plot data:
 
-ggplot(data = countries) 
+ggplot() +
+  # with a background
+  annotation_map_tile(data = gambia_boundaries, zoomin = 0) +
+  # plus a prevalence surface
+  geom_stars(data = st_as_stars(gambia_prevalence)) +
+  # with a color scale
+  scale_fill_viridis_c(na.value = "transparent", alpha = 0.75) +
+  # and a coordinate system
+  coord_sf()
 ```
 
-::: watch-out
-• Before using `geom_sf()`, verify that your *Spatial data* is an `"sf"` R object:
+• Here, skills for **geospatial visualization**,
 
-```{r}
-______(africountries)
+• To make *accurate*, *elegant* and *informative* maps.
+
+## R as a GIS
+
+• Geospatial analysis needs a **geographic information system (GIS)**.
+
+• *Manage*, *analyze*, and *visualize* spatial data.
+
+• Popular platforms, **ArcGIS** and **QGIS**, are *graphic-user-interface (GUI)*.
+
+• So **why use R for geospatial work?**
+
+• Here five of its merits:
+
+### (1/5) Reproducibility:
+
+• Code is straightforward for anyone to re-run,
+
+• Easily build on other people's work
+
+• Facilitates collaboration
+
+• Paste this code and reproduce in your computer:
+
+```{r,message=FALSE}
+# 👉 packages
+if(!require('pacman')) install.packages('pacman')
+pacman::p_load(sf, ggplot2)
+
+# 👉 data 
+nc <- st_read(system.file("shape/nc.shp", package = "sf"),
+              quiet = TRUE)
+# 👉 plot
+ggplot(data = nc) + 
+  geom_sf(aes(fill = SID74)) +
+  scale_fill_viridis_c()
 ```
 
-• More about `sf` in the following lessons!
-:::
+### (2/5)Reporting:
 
-### How to use it? {.unnumbered}
+• `{Rmarkdown}`, `{flexdashboard}` and `{shiny}` to generate reports and *dashboards*.
 
-• Visualize how one variable changes across a defined regions.
+• *Interactive* maps with `{leaflet}` instead of `{ggplot2}`:
 
-![Figure 2. Choropleth map with the number of cases in a simulated Ebola epidemic in Sierra Leone.](images/intro_choropleth_01.png){width="441"}
+```{r,message=FALSE}
+# 👉 packages
+if(!require('pacman')) install.packages('pacman')
+pacman::p_load(sf, leaflet)
 
-• Region of interest (Sierra Leone)
+# 👉 data
+nc <- st_read(system.file("shape/nc.shp", package = "sf"),
+              quiet = TRUE)
 
-• Partitioned into a finite number of subregions (districts)
-
-• Number of cases aggregated at that level.
-
-::: vocab
-• *Choropleth maps* visualize a shape called **Polygons**.
-
-• Collects data from an enclosed region.
-
-• Partitioned into a finite number of *areal units* with defined boundaries.
-
-• E.g., data collected by ZIP code, census tract, or the administrative boundary levels of a country (Figure 2).
-:::
-
-------------------------------------------------------------------------
-
-## Dot map
-
-### What is it? {.unnumbered}
-
-• Thematic map type that uses **dots** to represent attribute values.
-
-### How to plot it? {.unnumbered}
-
-• The *Dot map* could use the `size` or `color` argument.
-
-#### With Quantitative data {.unlisted .unnumbered}
-
-• A Quantitative Dot map requires the `size` argument.
-
-• Let's create a Dot map!
-
-• Use the `africapitals` dataset, it contains the location of capital cities in the African continent.
-
-1.  Use `ggplot2::geom_sf()` to plot these locations,
-2.  and `size` them according to their number of inhabitants:
-
-```{r,eval=TRUE,echo=TRUE}
-africapitals
+# 👉 plot
+pal <- colorNumeric("YlOrRd", domain = nc$SID74)
+leaflet(nc) %>%
+  addTiles() %>%
+  addPolygons(color = "white", fillColor = ~ pal(SID74),
+              fillOpacity = 1) %>%
+  addLegend(pal = pal, values = ~SID74, opacity = 1)
 ```
+
+### (3/5) Rich ecosystem:
+
+• R with rapidly *growing libraries*
+
+• highly-active open-source community,
+
+• ready-to-use packages or tutorials.
+
+• *interactive* map with one line of code!
+
+• `{mapview}` instead of `{leaflet}`:
+
+```{r,message=FALSE}
+# 👉 packages
+if(!require('pacman')) install.packages('pacman')
+pacman::p_load(sf, mapview)
+
+# 👉 data
+nc <- st_read(system.file("shape/nc.shp", package = "sf"),
+              quiet = TRUE)
+
+# 👉 plot
+mapview(nc, zcol = "SID74")
+```
+
+### (4/5) Convenience:
+
+• You already know R!
+
+• Explore new pieces of code.
 
 ::: rstudio-cloud
-We can replicate John Snow's Dot map with the number of deaths per household from the 1854 London cholera outbreak:
 
-```{r,eval=FALSE}
-cholera_deaths <- 
-  read_rds(here("data/cholera_deaths.rds"))
+As an example, we will use the `{tmap}` package and make minor modifications to it!
 
+First, run this chunk:
+
+```{r,warning=FALSE,message=FALSE}
+# 👉 packages
+if(!require('pacman')) install.packages('pacman')
+pacman::p_load(tmap, spData)
+
+# 👉 data
+load(here("data/nz_elev.rda"))
+
+# 👉 plot
+tm_shape(nz_elev)  +
+  tm_raster(title = "elev", 
+            style = "cont",
+            palette = "-RdYlGn") +
+  tm_shape(nz) +
+  tm_borders(col = "red", 
+             lwd = 3) +
+  tm_scale_bar(breaks = c(0, 100, 200),
+               text.size = 1) +
+  tm_compass(position = c("LEFT", "center"),
+             type = "rose", 
+             size = 2) +
+  tm_credits(text = "J. Nowosad, 2019") +
+  tm_layout(main.title = "My map",
+            bg.color = "lightblue",
+            inner.margins = c(0, 0, 0, 0))
 ```
+
+Now, apply any of the following suggestions to get used to how this package works:
+
+1.  Change the **map title** from "My map" to "New Zealand".
+2.  Update the **map credits** with your own name and today's date.
+3.  Change the **color palette** to "BuGn".
+4.  Try **other palettes** from <http://colorbrewer2.org/>
+5.  Put the **north arrow** in the top right corner of the map.
+6.  Improve the **legend title** by adding the legend units.
+7.  Increase the number of breaks in the **scale bar**.
+8.  Change the **borders' color** of the New Zealand's regions to black.
+9.  Decrease the line width.
+10. Change the **background color** to any color of your choice.
 :::
 
-#### With Categorical data {.unlisted .unnumbered}
+### (5/5) Integrated workflow:
 
-• Visualize airports *classified* by `type` using the `color` argument:
+• Combine geospatial visualization and statistical analyses,
 
-```{r,results='hide'}
-airports <- rnaturalearth::ne_download(scale = 10,
-                                       type = "airports", 
-                                       returnclass = "sf")
+• all within a single script.
 
+• For example, built 3D maps of the Monterey Bay using `{rayshader}`
 
-```
+• Tutorial available: <https://www.tylermw.com/3d-maps-with-rayshader/>
 
-::: practice
-Create a Thematic map with the `afriairports` object to portrait all its airport locations, using `geom_sf()`, and `color` them in relation to the `type` variable.
+![](images/montbayabove.gif)
 
-```{r,eval = FALSE}
-# Write and visualize your answer:
-q2
-```
-:::
+• Bivariate maps of unequal distribution of the income.
 
-### How to use it? {.unnumbered}
+• Tutorial available: <https://timogrossenbacher.ch/2019/04/bivariate-maps-with-ggplot2-and-sf/>
 
-• To visualize the *scatter of your data* and visually *scan for clusters*.
-
-![Figure 3. Dot map. Location of simulated Ebola cases in Sierra Leone, colored by each case outcome.](images/intro_dotdist_01.png){width="437"}
-
-::: vocab
-• *Dot maps* visualize a shape called **Point**.
-
-• Collects data that register the *locations* of random events.
-
-• E.g., geographical coordinates of individuals with a given diagnosis (Figure 3).
-:::
-
-::: side-note
-• Bothered by having just dots and no geographical context?
-
-• That's good! We will see how to add those using roads and rivers very soon.
-:::
-
-::: recap
-• Thematic maps visualize specific **Geometry** types:
-
-• Choropleth maps visualize *Polygons*.
-
-• Dot maps visualize *Points*.
-
-![Figure 4. Geometry types for Choropleth and Dot maps.](images/geometries-point_poly.jpg){width="445"}
-:::
-
-::: practice
-Which of the following options of *Thematic map* types:
-
-a.  `"choropleth_map"`
-b.  `"dot_distribution_map"`
-
-...corresponds to each of these *Epidemic map* figures seen below?
+![](images/bivariate-map-sw.png){width="499"}
 
 ```{r}
-# Write your answers here as comments:
-# 
-#
+
 ```
-
-1.  [Malaria cases in Africa](https://data.unicef.org/topic/child-health/malaria/):
-
-![](images/question_map_01.jpg){width="446"}
-
-2.  [COVID-19 cases in the world](https://coronavirus.jhu.edu/map.html):
-
-![](images/question_map_02.jpg){width="613"}
-:::
-
-------------------------------------------------------------------------
 
 ## Wrap up
 
-• We learned about *Thematic maps*,
+• We learned why to use R as a GIS software,
 
-• How to create them using *ggplot2::geom_sf()*,
+• take advantage of its coding environment.
 
-• Which type of *Geometry* they visualize.
+• But, which maps are we going to built?
 
-![Figure 5. Concept map #1.](images/conceptmap-00-thematic-v2.png)
+![Figure 1. Thematic maps: (A) Choropleth map, (B) Dot map, (C) Density map, and (D) Basemap for a dot map.](images/intro_thematic_map_06.png){width="484"}
 
-• But, how can we complement Thematic maps with *geographic context*?
+• How to built -step by step- different types of **Thematic maps** using the `{ggplot2}` package,
 
-• We are going to learn about how to add *Physical features* to our maps.
+• different data sources and illustrative annotations.
 
-------------------------------------------------------------------------
+![Figure 2. {ggplot2} map with text annotations, a scale bar and north arrow.](images/multilayer_map_01.png){width="409"}
 
 ## Contributors {.unlisted .unnumbered}
 
 The following team members contributed to this lesson:
 
-`r tgc_contributors_list(ids = c("avallecam", "lolovanco", "kendavidn"))`
-
-------------------------------------------------------------------------
+`r tgc_contributors_list(ids = c("avallecam", "kendavidn"))`
 
 ## References {.unlisted .unnumbered}
 
@@ -290,37 +322,16 @@ Some material in this lesson was adapted from the following sources:
 
 -   *Batra, Neale, et al. (2021). The Epidemiologist R Handbook. Chapter 28: GIS Basics*. (2021). Retrieved 01 April 2022, from <https://epirhandbook.com/en/gis-basics.html>
 
--   *Lovelace, R., Nowosad, J., & Muenchow, J. Geocomputation with R. Chapter 2: Geographic data in R*. (2019). Retrieved 01 April 2022, from <https://geocompr.robinlovelace.net/spatial-class.html>
-
--   *Moraga, Paula. Geospatial Health Data: Modeling and Visualization with R-INLA and Shiny. Chapter 2: Spatial data and R packages for mapping*. (2019). Retrieved 01 April 2022, from <https://www.paulamoraga.com/book-geospatial/sec-spatialdataandCRS.html>
-
 -   *Baumer, Benjamin S., Kaplan, Daniel T., and Horton, Nicholas J. Modern Data Science with R. Chapter 17: Working with geospatial data*. (2021). Retrieved 05 June 2022, from <https://mdsr-book.github.io/mdsr2e/ch-spatial.html>
 
+-   *Lovelace, R., Nowosad, J., & Muenchow, J. Geocomputation with R. Chapter 2: Geographic data in R.* (2019). Retrieved 01 April 2022, from <https://geocompr.robinlovelace.net/spatial-class.html>
+
+-   *Moraga, Paula. Geospatial Health Data: Modeling and Visualization with R-INLA and Shiny. Chapter 12: Building a dashboard to visualize spatial data with flexdashboard*. (2019). Retrieved 13 September 2022, from <https://www.paulamoraga.com/book-geospatial/sec-flexdashboard.html>
+
+-   *Moreno, M., and Bastille, M. Drawing beautiful maps programmatically with R, sf and ggplot2 --- Part 1: Basics.* (2018). Retrieved 13 September 2022, from <https://r-spatial.org/r/2018/10/25/ggplot2-sf.html.>
+
+-   *Nowosad, J. Basics of Spatial Data Analysis Workshop.* (2019). Retrieved 13 September 2022, from <https://github.com/Nowosad/whyr_19w/blob/master/code/spatial_vis.R>
+
+-   *Nowosad, J. The Landscape of Spatial Data Analysis in R.* (2019). Retrieved 13 September 2022, from <https://jakubnowosad.com/whyr_19/#1>
+
 `r tgc_license()`
-
-------------------------------------------------------------------------
-
-## Answer Key {.unnumbered}
-
-### Q1 {.unlisted .unnumbered}
-
-```{r}
-q1 <- ggplot(data = world) + 
-  geom_sf(aes(fill = pop))
-q1
-```
-
-### Q2 {.unlisted .unnumbered}
-
-```{r}
-q2 <- ggplot(data = afriairports) + 
-  geom_sf(aes(fill = type))
-q2
-```
-
-### Q3 & Q4 {.unlisted .unnumbered}
-
-Which of the following options of *Thematic map* types corresponds to each of these *Epidemic map* figures? Your answer should be either "choropleth_map" or "dot_distribution_map".
-
-1.  [\*\*Malaria cases in Africa]\*\* is a CHROPLETH MAP
-2.  **[COVID-19 cases in the world]** is a DOT DISTRIBUTION MAP
